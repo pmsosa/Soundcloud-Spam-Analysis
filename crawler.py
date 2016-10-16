@@ -11,6 +11,10 @@ import unicodedata
 DATABASE_CONFIG = 'sqlite:///DB.db'
 SC_CLIENT_ID = "02gUJC0hH2ct1EGOcYXQIzRFU91c72Ea"
 SC_URL = "http://api.soundcloud.com/users/"
+starting_user_number = 1
+number_rows_to_be_committed = 10
+ending_user_number = 1000000
+number_of_users_to_fetch = 5
 
 engine = create_engine(DATABASE_CONFIG, echo=True,  encoding='utf8')
 engine.raw_connection().connection.text_factory = unicode
@@ -75,12 +79,19 @@ for x in range(2, 1000):
     response = requests.get(SC_URL + str(x), params ={'client_id': SC_CLIENT_ID} )
     if response.status_code != 200:
     	continue
+    
+    if number_of_users_to_fetch == 0:
+    	session.commit()
+    	break
+    else:
+    	number_of_users_to_fetch -=1
+
     command = create_user_object_command(response.json())
     u = eval(command)
     session.add(u)
     
-    #how many to store in the memory before commit!
-    session.commit()
+    if x % number_rows_to_be_committed == 0:
+    	session.commit()
 
 
 
