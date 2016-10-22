@@ -11,10 +11,10 @@ import logging
 
 SC_CLIENT_ID = "02gUJC0hH2ct1EGOcYXQIzRFU91c72Ea"
 SC_URL = "http://api.soundcloud.com/users/"
-starting_user_number = 1
+starting_user_number = 261158010
 number_rows_to_be_committed = 10
-ending_user_number = 1000000
-number_of_users_to_fetch = 2000
+ending_user_number = 0
+number_of_users_to_fetch = 261158010
 LOG_FILENAME = 'throttle_log.out'
 logging.basicConfig(filename=LOG_FILENAME,
                     level=logging.DEBUG,
@@ -39,18 +39,22 @@ def create_user_object_command(json_object):
 	command = command[:-2] + ")"
 	return command	
 
-for x in range(starting_user_number, ending_user_number):
+x = starting_user_number
+while (x > ending_user_number):
+    print "ID:",x,
     response = requests.get(SC_URL + str(x), params ={'client_id': SC_CLIENT_ID} )
-    logging.debug("%s: Too many requests, id = %s" % (datetime.datetime.now(),x))
+    print response.status_code
+    #logging.debug("%s: Too many requests, id = %s" % (datetime.datetime.now(),x))
+    
     if response.status_code != 200:
         if response.status_code != 429:
+            x = x-1; #Keep decreasing counter
             continue
         while response.status_code == 429:
             logging.debug("%s: Too many requests, id = %s" % (datetime.datetime.now(),x))
             sleep(random.randint(1,10 ))
             response = requests.get(SC_URL + str(x), params ={'client_id': SC_CLIENT_ID} )
 
-    
     if number_of_users_to_fetch == 0:
     	session.commit()
     	break
@@ -63,3 +67,5 @@ for x in range(starting_user_number, ending_user_number):
     
     if x % number_rows_to_be_committed == 0:
     	session.commit()
+
+    x = x-1; #Decrease Counter
