@@ -4,6 +4,8 @@ import json
 import unicodedata
 from users import User
 import users
+import datetime
+import logging
 
 
 
@@ -12,7 +14,11 @@ SC_URL = "http://api.soundcloud.com/users/"
 starting_user_number = 1
 number_rows_to_be_committed = 10
 ending_user_number = 1000000
-number_of_users_to_fetch = 20
+number_of_users_to_fetch = 2000
+LOG_FILENAME = 'throttle_log.out'
+logging.basicConfig(filename=LOG_FILENAME,
+                    level=logging.DEBUG,
+                    )
 
 
 Session = sessionmaker()
@@ -31,13 +37,19 @@ def create_user_object_command(json_object):
 		
 		command += "%s = \"%s\", " % (key, val)
 	command = command[:-2] + ")"
-	return command
-	
+	return command	
 
 for x in range(starting_user_number, ending_user_number):
     response = requests.get(SC_URL + str(x), params ={'client_id': SC_CLIENT_ID} )
+    logging.debug("%s: Too many requests, id = %s" % (datetime.datetime.now(),x))
     if response.status_code != 200:
-    	continue
+        if response.status_code != 429:
+            continue
+        while response.status_code == 429:
+            logging.debug("%s: Too many requests, id = %s" % (datetime.datetime.now(),x))
+            sleep(random.randint(1,10 ))
+            response = requests.get(SC_URL + str(x), params ={'client_id': SC_CLIENT_ID} )
+
     
     if number_of_users_to_fetch == 0:
     	session.commit()
