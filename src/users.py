@@ -3,6 +3,8 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy import *
 import yaml
 
+global engine
+
 with open("config.yml", 'r') as ymlfile:
     cfg = yaml.load(ymlfile)
 Base = declarative_base()
@@ -41,6 +43,5 @@ class User(Base):
 	comments_count  = Column(String)
 	plan  = Column(String)
 
-engine = create_engine(cfg['active_database_config'], echo=True,  encoding='utf8')
+engine = create_engine(cfg['active_database_config'], echo=False,  encoding='utf8')
 Base.metadata.create_all(engine)
-global engine

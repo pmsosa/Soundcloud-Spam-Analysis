@@ -90,3 +90,4 @@ ENV/
 
 # SQLITE DB file
 *.db
+src/*.yml
