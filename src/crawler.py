@@ -13,7 +13,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--begining_number", nargs='?', const=0,  help="set staring user number", type= int)
 parser.add_argument("-e", "--ending_number",  nargs='?', const=0,  help="set ending user number", type= int)
-parser.add_argument("-c", "--users_count",  nargs='?', const=1000000, default=1000000,    help="set the amount of users to be fetched", type= int)
+parser.add_argument("-c", "--users_count",  nargs='?', const=10000000, default=10000000,    help="set the amount of users to be fetched", type= int)
 args = parser.parse_args()
 
 

@@ -1,0 +1,36 @@
+--- 
+services: 
+  web1:
+    environment: 
+        - starting_number=260144000
+        - ending_number=260134000
+    build:
+      context: "." 
+  web2: 
+    environment: 
+        - starting_number=260134000
+        - ending_number=260124000
+    build: 
+      context: "."       
+  web3: 
+    environment: 
+        - starting_number=260124000
+        - ending_number=260114000
+    build: 
+      context: "."
+      
+  web4: 
+    environment: 
+        - starting_number=260114000
+        - ending_number=  260104000
+    build: 
+      context: "."
+      
+  web5: 
+    environment: 
+        - starting_number=260104000
+        - ending_number=  260094000
+    build: 
+      context: "."
+    
+version: "2"
