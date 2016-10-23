@@ -6,16 +6,26 @@ from users import User
 import users
 import datetime
 import logging
+import argparse
 
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-b", "--begining_number", nargs='?', const=0,  help="set staring user number", type= int)
+parser.add_argument("-e", "--ending_number",  nargs='?', const=0,  help="set ending user number", type= int)
+parser.add_argument("-c", "--users_count",  nargs='?', const=1000000, default=1000000,    help="set the amount of users to be fetched", type= int)
+args = parser.parse_args()
 
 
 SC_CLIENT_ID = "02gUJC0hH2ct1EGOcYXQIzRFU91c72Ea"
 SC_URL = "http://api.soundcloud.com/users/"
-starting_user_number = 261158010
-number_rows_to_be_committed = 10
-ending_user_number = 0
-number_of_users_to_fetch = 261158010
+starting_user_number = args.begining_number #261158010
+number_rows_to_be_committed = 500
+ending_user_number = args.ending_number
+number_of_users_to_fetch = args.users_count
 LOG_FILENAME = 'throttle_log.out'
+
+
 logging.basicConfig(filename=LOG_FILENAME,
                     level=logging.DEBUG,
                     )
