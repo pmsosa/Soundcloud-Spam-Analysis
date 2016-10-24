@@ -1,36 +1,58 @@
 --- 
 services: 
   web1:
+    tty: true
     environment: 
-        - starting_number=260144000
-        - ending_number=260134000
+        - starting_number= 260094000
+        - ending_number=   260004000
     build:
-      context: "." 
-  web2: 
+      context: "."        
+  web3:
+    tty: true
     environment: 
-        - starting_number=260134000
-        - ending_number=260124000
-    build: 
-      context: "."       
-  web3: 
-    environment: 
-        - starting_number=260124000
-        - ending_number=260114000
+        - starting_number=260954000
+        - ending_number=  260904000
     build: 
       context: "."
       
-  web4: 
+  web4:
+    tty: true 
     environment: 
-        - starting_number=260114000
-        - ending_number=  260104000
+        - starting_number=260904000
+        - ending_number=  260854000
     build: 
       context: "."
       
   web5: 
+    tty: true
     environment: 
-        - starting_number=260104000
-        - ending_number=  260094000
+        - starting_number=260854000
+        - ending_number=  260804000
     build: 
       context: "."
+  web55: 
+    tty: true
+    environment: 
+        - starting_number=260804000
+        - ending_number=  260754000
+    build: 
+      context: "."
+
+  web56: 
+    tty: true
+    environment: 
+        - starting_number=260754000
+        - ending_number=  260704000
+    build: 
+      context: "."
+
+  web57: 
+    tty: true
+    environment: 
+        - starting_number=260704000
+        - ending_number=  260654000
+    build: 
+      context: "."
+
     
 version: "2"

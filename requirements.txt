@@ -2,3 +2,4 @@ SQLAlchemy
 requests
 psycopg2
 pyyaml
+backoff

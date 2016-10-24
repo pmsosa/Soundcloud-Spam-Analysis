@@ -1,0 +1,41 @@
+--- 
+services: 
+  web1:
+    tty: true
+    environment: 
+        - starting_number=260144000
+        - ending_number=260134000
+    build:
+      context: "." 
+  web2:
+    tty: true 
+    environment: 
+        - starting_number=260134000
+        - ending_number=260124000
+    build: 
+      context: "."       
+  web3:
+    tty: true
+    environment: 
+        - starting_number=260124000
+        - ending_number=260114000
+    build: 
+      context: "."
+      
+  web4:
+    tty: true 
+    environment: 
+        - starting_number=260114000
+        - ending_number=  260104000
+    build: 
+      context: "."
+      
+  web5: 
+    tty: true
+    environment: 
+        - starting_number=260104000
+        - ending_number=  260094000
+    build: 
+      context: "."
+    
+version: "2"
