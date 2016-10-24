@@ -1,0 +1,8 @@
+
+--Remove Duplicated rows
+DELETE FROM users
+WHERE user_id IN (SELECT user_id
+              FROM (SELECT id,
+                             ROW_NUMBER() OVER (partition BY id ORDER BY user_id) AS rnum
+                     FROM users) t
+              WHERE t.rnum > 1);

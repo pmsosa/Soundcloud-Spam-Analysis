@@ -7,7 +7,11 @@ import users
 import datetime
 import logging
 import argparse
+import backoff
 
+
+global SC_CLIENT_ID
+global SC_URL
 
 
 parser = argparse.ArgumentParser()
@@ -20,16 +24,9 @@ args = parser.parse_args()
 SC_CLIENT_ID = "02gUJC0hH2ct1EGOcYXQIzRFU91c72Ea"
 SC_URL = "http://api.soundcloud.com/users/"
 starting_user_number = args.begining_number #261158010
-number_rows_to_be_committed = 500
+number_rows_to_be_committed = 100
 ending_user_number = args.ending_number
 number_of_users_to_fetch = args.users_count
-LOG_FILENAME = 'throttle_log.out'
-
-
-logging.basicConfig(filename=LOG_FILENAME,
-                    level=logging.DEBUG,
-                    )
-
 
 Session = sessionmaker()
 Session.configure(bind=users.engine)
@@ -49,10 +46,18 @@ def create_user_object_command(json_object):
 	command = command[:-2] + ")"
 	return command	
 
+
+@backoff.on_exception(backoff.expo,
+                      (requests.exceptions.Timeout,
+                       requests.exceptions.ConnectionError),
+                      max_tries=30)
+def make_request(user_id):
+    return requests.get(SC_URL + str(x), params ={'client_id': SC_CLIENT_ID} )
+
 x = starting_user_number
 while (x > ending_user_number):
     print "ID:",x,
-    response = requests.get(SC_URL + str(x), params ={'client_id': SC_CLIENT_ID} )
+    response = make_request(x)
     print response.status_code
     #logging.debug("%s: Too many requests, id = %s" % (datetime.datetime.now(),x))
     
@@ -61,9 +66,8 @@ while (x > ending_user_number):
             x = x-1; #Keep decreasing counter
             continue
         while response.status_code == 429:
-            logging.debug("%s: Too many requests, id = %s" % (datetime.datetime.now(),x))
             sleep(random.randint(1,10 ))
-            response = requests.get(SC_URL + str(x), params ={'client_id': SC_CLIENT_ID} )
+            response = make_request(x)
 
     if number_of_users_to_fetch == 0:
     	session.commit()
