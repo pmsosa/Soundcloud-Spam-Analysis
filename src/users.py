@@ -10,7 +10,7 @@ with open("config.yml", 'r') as ymlfile:
 Base = declarative_base()
 
 class User(Base):
-	__tablename__ = 'users' 
+	__tablename__ = 'users_dyno' 
     
 	user_id = Column(Integer, primary_key=True, autoincrement=True)
 	id = Column(String)
