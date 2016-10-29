@@ -62,8 +62,11 @@ def make_request_ticket_close(ticket_num):
     return requests.get('http://159.203.182.16:3000/ticket/close_ticket/%s' % ticket_num)
 
 
-
-
+@backoff.on_exception(backoff.expo,
+                      Exception,
+                      max_tries=30)
+def commit_rows(session):
+  session.commit()
 
 
 while True:
@@ -85,18 +88,12 @@ while True:
                 sleep(random.randint(1,10 ))
                 response = make_request_sound_cloud(x)
 
-        if number_of_users_to_fetch == 0:
-        	session.commit()
-        	break
-        else:
-        	number_of_users_to_fetch -=1
-
         command = create_user_object_command(response.json())
         u = eval(command)
         session.add(u)
         
         if x % number_rows_to_be_committed == 0:
-        	session.commit()
+          commit_rows(session)
 
         x = x-1; #Decrease Counter
     make_request_ticket_close(data['id'])
