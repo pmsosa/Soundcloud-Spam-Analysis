@@ -1,0 +1,3 @@
+[submodule "analysis/SoundCloudBotDetection"]
+	path = analysis/SoundCloudBotDetection
+	url = https://github.com/netzo92/SoundCloudBotDetection
