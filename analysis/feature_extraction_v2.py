@@ -1,84 +1,244 @@
 import csv
-import sys
-import collections
-import hashlib
+import requests
 
-FIELDS = 'user_id,id,website,myspace_name,last_name,reposts_count,public_favorites_count,followings_count,full_name,city,first_name,track_count,playlist_count,discogs_name,followers_count,online,username,description,subscriptions,kind,last_modified,website_title,permalink_url,likes_count,permalink,country,uri,avatar_url,comments_count,plan'.split(',')
+#Fields
+
+id                      = 1
+website                 = 2
+myspace_name            = 3
+last_name               = 4
+reposts_count           = 5
+public_favorites_count  = 6
+followings_count        = 7
+full_name               = 8
+city                    = 9
+first_name              = 10
+track_count             = 11
+playlist_count          = 12
+discogs_name            = 13
+followers_count         = 14
+online                  = 15
+username                = 16
+description             = 17
+subscriptions           = 18
+kind                    = 19
+last_modified           = 20
+website_title           = 21
+permalink_url           = 22
+likes_count             = 23
+permalink               = 24
+country                 = 25
+uri                     = 26
+avatar_url              = 27
+comments_count          = 28
+plan                    = 29
+#user_id                 = 0 #This is internal to our DB only
+total_fields = 29
 
 
-features = ['public_favorites_count','user_id', 'followings_count', 'followers_count', 'likes_count', 'track_count', 'playlist_count', 'id','user_id', 'comments_count']
-
-discrete_features = ['country',  'plan', 'kind']
+i = 0
 
 
-is_none_features_list = ['description', 'avatar_url', 'first_name', 'last_name', 'city', 'discogs_name']
+music_terms = ["guitar","music","hiphop","hip-hop","techno","rock","country","pop","rap","orchestra","symphony","piano","metal","house","dubstep",  \
+"jazz","reggae","musical","opera","calypso","dance","song","art","ballet","flamenco","choral","rhythm","lyric","ballad","musicians","performed","blues"]
 
-is_none_features = {'description':'None','avatar_url': 'https://a1.sndcdn.com/images/default_avatar_large.png', 'first_name': 'None', 'last_name': 'None', 'city':'None', 'discogs_name': 'None'}
+sketchy_one_liners = ["Food evangelist"," Coffee fanatic","Wannabe analyst","Communicator","General web specialist",    \
+"Alcohol scholar","Social media lover","Introvert","Total reader"," Friendly organizer","General analyst",          \
+"Alcohol evangelist","Hardcore creator","Travel nerd", "Devoted entrepreneur"," Reader","Internet evangelist",      \
+"General analyst","Wannabe analyst","Friendly web nerd"," Freelance social media expert","Thinker","Alcohol geek","Student","Total tv lover"]
 
-class User:
-    meta = {}
+sketchy_terms = [ "goo.gl" , "bit.ly", "bitly", "adfly", "adf.ly", "porn", "boobs", "sex", "anal", "tits", "nipples", "vagina", "penis"]
 
-    def __init__(self, user_dict):
-        self.user_dict = collections.OrderedDict()
-        for feature in features:
-            self.user_dict[feature] = user_dict[feature]
-        for dfeature in discrete_features:
-            if dfeature not in User.meta:
-                User.meta[dfeature] = {}
-            x = 0 
-            if user_dict[dfeature] not in User.meta[dfeature]:
-                User.meta[dfeature][user_dict[dfeature]] = len(User.meta[dfeature])
-        for dfeature in discrete_features:
-            self.user_dict[dfeature] = User.meta[dfeature][user_dict[dfeature]]
+output = open("processed.csv","w+")
+sketch_output = open("processed_sketch.csv","w+")
 
-        ##Description
+with open("cs276_NOV06-2pm.csv", 'r') as f:
+    reader = csv.reader(f)
+    next(reader)
 
-        ##Avatar_URL
-        self.user_dict["avatar_url"] = User.meta["avatar_url"][user_dict["avatar_url"]]
-        print "Avatar_URL",abs(hash(user_dict["avatar_url"])),user_dict["avatar_url"]
+    write_head = 0
+    sketchnum = 0
+    
+
+    for r in reader:
+
+        sketch = False
+
+        user = []
+        header = []
+
+        ###Random Check!#########
+        if (len(r) != 30):
+            print len(r)
+            if (len(r)==1):
+                print rinput;
+                break;
+            continue;
+        ##########################
+       
+##### FEATURE EXTRACTION BEGINS
+
+        #ID     (Keep the User ID to be able to distinguish them)
+        user += [r[id]]
+        header += ["id"]
+
+    ####### TEXT BASED FEATURES
+
+        #Website, Myspace   (Are there sketchy terms in their websites or myspace names)
+        temp = r[website] + " " + r[myspace_name] + " " + r[website_title]
+        c = 0
+        for term in sketchy_terms:
+            if term.lower() in temp.lower():
+                c = c + 1
+                sketch = True
+        user += [c]
+        header += ["urls"]
+
+        #Description  (Are there sketchy terms in their Description)
+        temp = r[description]
+        c = 0
+        for term in sketchy_terms:
+            if term.lower() in temp.lower():
+                c = c + 1
+                sketch = True
+        user += [c]
+        header += ["description-porn"]
+
+        temp = r[description]
+        for term in sketchy_one_liners:
+            if term.lower() in temp.lower():
+                c = c + 1
+                sketch = True
+        user += [c]
+        header += ["description-sketchy"]
 
         #First Name
-        print 
+        user += [abs(hash(r[first_name]))]
+        header += ["first_name"]
 
-        #Last Name
+        #Last_Name (Hash it to find similar matches)
+        user += [abs(hash(r[last_name]))]
+        header += ["last_name"]
+        
+        #Full Name 
+        user += [abs(hash(r[full_name]))]
+        header += ["full_name"]
+
+        #Username
+        user += [abs(hash(r[username]))]
+        header += ["username"]
 
         #City
+        user += [abs(hash(r[city]))]
+        header += ["city"]
 
-        #Discogs_Name
+        #Country
+        user += [abs(hash(r[country]))]
+        header += ["country"]
 
-        for is_none_feature in is_none_features_list:
-            self.user_dict[is_none_feature] = 0 if user_dict[is_none_feature] == is_none_features[is_none_feature] else 1
+        #Avatar URL
+        user += [abs(hash(r[avatar_url]))]
+        header += ["avatar_url"]
 
-    def to_dict(self):
-        return self.user_dict
+    #### COUNT BASED FEATURES 
 
-def parse_file(ifile, ofile):
-    rdr = csv.DictReader(ifile)
-    wtr = csv.DictWriter(ofile, fieldnames = features+discrete_features+is_none_features_list )
-    wtr.writeheader()
-    users_processed = 0
-    for user_dict in rdr:
-        users_processed += 1
-        print(users_processed)
-        u = User(user_dict)
-        wtr.writerow(u.to_dict())
-    ifile.close()
-    ofile.close()
+        #Repost Count
+        user += [int(r[reposts_count])]
+        header += ["reposts_count"]
+
+        #Public Favs
+        user += [int(r[public_favorites_count])]
+        header += ["public_favorites_count"]
+
+        #Following
+        user += [int(r[followings_count])]
+        header += ["followings_count"]
+
+        #Follower Count
+        user += [int(r[followers_count])]
+        header += ["followers_count"]
+
+        #Track Count
+        user += [int(r[track_count])]
+        header += ["track_count"]
+
+        #Playlist Count
+        user += [int(r[playlist_count])]
+        header += ["playlist_count"]
+
+        #Likes
+        user += [int(r[likes_count])]
+        header += ["likes_count"]     
+
+        #Comment Count
+        user += [int(r[comments_count])]
+        header += ["comments_count"]      
+
+    #### MISC FEATURES
+
+        #Do they Pay? (subscriptions, plan)
+        if (plan != "Free" and subscriptions != []):
+            user += [1]
+        else:
+            user += [0]
+        header += ["plan"]
+
+        #Last Modified
+        date = r[last_modified].split("/")
+        date = date[0][2:] + date[1] + date[2][:2]
+
+        user += [int(date)]
+        header += ["date"]
 
 
-def main(input_file):
-    with open(input_file, 'r') as data_file:
-        with open('features.txt', 'w') as ofile:
-            parse_file(data_file, ofile)
+        #Alive
+        # try:
+        #     print r[permalink_url][2:][:-1]
+        #     r = requests.get(r[permalink_url][2:][:-1])
+        #     user += [r.status_code]
+        #     print r.status_code
+        #     header += ["alive"]
+        # except:
+        #     raw_input("Something bad happened at user" + str(r[id]) + "--- Continue?")
+
+        if (i % 10000 == 0): print i,sketchnum
+
+
+
+        if write_head == 0:
+            hdr = ','.join(map(str, header))
+            print "HEADER: ", hdr
+            output.write(hdr)
+            sketch_output.write(hdr)
+            write_head = 1
+
+        user = ','.join(map(str, user))
+        output.write(user)
+        if sketch:  
+            sketch_output.write(user)
+            sketchnum += 1
+        i += 1
+
+output.close()
+
+
+#Discogs + Online + Kind
+
+'''
+
+permalink_url           = 22
+permalink               = 24
+
+uri                     = 2
+
+
+'''
 
 
 
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Not enough args.")
-    else:
-        main(sys.argv[1])
 
-    
+
+
+
