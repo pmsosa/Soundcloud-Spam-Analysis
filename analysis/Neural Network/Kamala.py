@@ -98,7 +98,7 @@ else:
 
 
 #Actual Feature Vectors
-if (True):
+if (False):
     
     output = open("processed.csv","w+")
     output2 = open("sketch.csv","w+")
@@ -146,7 +146,7 @@ if (True):
         ##### FEATURE EXTRACTION BEGINS
 
             #ID
-            user[0] = int(r[0])
+            user[0] = int(r[id])
 
             #Follower
             user[1] = int(r[followers_count])
@@ -188,7 +188,7 @@ if (True):
                     user[10] =  desc_dict[r[website]];
 
 
-            #DeleteMe
+            # #Help with the manual pickin's. Mark potential spam that we have already seen in clusters.s
             reason = 0
             if user[9] >= 50 or user[10] >= 50: 
                 user[11] = 1
@@ -197,7 +197,7 @@ if (True):
             replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))
             desc = desc.translate(replace_punctuation)
 
-            for term in (["goo.gl" + "goo gl" + "bit.ly" + "bit ly"+ "tinyurl" + "naked" + "boobs" + "click here to see me" + "Hi sweety" + "Hi sweetie"] +sketchy_one_liners):
+            for term in (["goo.gl","goo gl","bit.ly","bit ly","tinyurl","naked","boobs" ,"click here to see me","Hi sweety" ,"Hi sweetie"] +sketchy_one_liners):
                 if term.lower() in desc.lower():
                     user[11] = 1
                     reason = "----2"+term+"------"
@@ -205,16 +205,20 @@ if (True):
                     user[11] = 1
                     reason = 3
                     
-            #######
+            # #######
 
-
+            # if int(r[id]) == 260802509: 
+            #     print desc
+            #     print webt.lower()
+            #     print "goo gl" in webt.lower()
+            #     print user
 
             userW = ','.join(map(str, user))
             output.write(userW + "\n")
 
             if user[11] == 1:
                 sketch_n += 1
-                print reason,r
+                #print reason,r
                 output2.write(userW + "\n")
 
 
@@ -298,7 +302,7 @@ def getBatches(size_train,size_test,seed=0):
     return (X_train,y_train,X_test,y_test)
 
 #Keras NN
-def keras_nn(X_train,y_train,X_test,y_test,verbose=0,batchsize=50,layersize=250,epoch=1,hidden=1):
+def keras_nn(X_train,y_train,X_test,y_test,verbose=0,batchsize=50,layersize=250,epoch=3,hidden=1):
 
     #print numpy.asarray(X_train)[0:5]
     # create the model
@@ -400,10 +404,18 @@ def get_user(id):
 (X_train,y_train,X_test,y_test) = getBatches(5000,5000,0)
 kamala = keras_nn(X_train,y_train,X_test,y_test,verbose=1)
 
-x = numpy.asarray([get_user(246928450)])
-x2 = numpy.asarray([get_user(246928449)])
-kamala.predict_proba(x)
-kamala.predict_proba(x2)
+print "Test..."
+x = numpy.asarray([get_user(246928450)])  #Not Spam (Random Zombie User)
+x2 = numpy.asarray([get_user(4192879)])   #Not Spam (Konukoii)
+x3 = numpy.asarray([get_user(246928489)]) #Spam
+x4 = numpy.asarray([get_user(41922879)])  #Not Spam (Random Zombie User)
+x5 = numpy.asarray([get_user(4360546)])   #Not Spam (Kygo)
+kamala.train_on_batch(x5,numpy.asarray([0]))
+print kamala.predict_proba(x,verbose = 0)
+print kamala.predict_proba(x2,verbose = 0)
+print kamala.predict_proba(x3,verbose = 0)
+print kamala.predict_proba(x4,verbose = 0)
+print kamala.predict_proba(x5,verbose = 0)
 embed()
 
 
