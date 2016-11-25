@@ -100,11 +100,13 @@ else:
 #Actual Feature Vectors
 if (False):
     
-    output = open("processed.csv","w+")
-    output2 = open("sketch.csv","w+")
+    output = open("processed2.csv","w+")
+    output2 = open("sketch2.csv","w+")
     
     print "Build Feature Vector"
-    with open("cs276_NOV06-2pm.csv", 'r') as f:
+    #cs276_NOV06-2pm.csv
+    #../users.csv
+    with open("../users.csv", 'r') as f:
         reader = csv.reader(f)
         next(reader)
 
@@ -121,6 +123,7 @@ if (False):
                 "Pays",                \
                 "DuplicateDescription",\
                 "DuplicateWebsite",    \
+                "website_aggregate",   \
                 "Spam"]
 
         hdr = ','.join(map(str, header))
@@ -129,7 +132,6 @@ if (False):
         for r in reader:
 
             sketch = False
-
 
 
             user = [0] *  len(header)
@@ -187,11 +189,23 @@ if (False):
                 if desc_dict[r[website]] > 1:
                     user[10] =  desc_dict[r[website]];
 
+            #Is URL aggregate site
+            aggregate_sites = ["goo.gl","bit.ly","ad.fly","tinyurl"]
+            for term in aggregate_sites:
+                if term in r[website]:
+                    user[11] = 1
+                    print term
 
+
+
+            ########################################
             # #Help with the manual pickin's. Mark potential spam that we have already seen in clusters.s
+            
+
+            if user[11] == 1: user[12] = 1
             reason = 0
             if user[9] >= 50 or user[10] >= 50: 
-                user[11] = 1
+                user[12] = 1
                 reason = 1
 
             replace_punctuation = string.maketrans(string.punctuation, ' '*len(string.punctuation))
@@ -199,13 +213,12 @@ if (False):
 
             for term in (["goo.gl","goo gl","bit.ly","bit ly","tinyurl","naked","boobs" ,"click here to see me","Hi sweety" ,"Hi sweetie"] +sketchy_one_liners):
                 if term.lower() in desc.lower():
-                    user[11] = 1
+                    user[12] = 1
                     reason = "----2"+term+"------"
                 if term.lower() in webt.lower():
-                    user[11] = 1
+                    user[12] = 1
                     reason = 3
                     
-            # #######
 
             # if int(r[id]) == 260802509: 
             #     print desc
@@ -213,10 +226,12 @@ if (False):
             #     print "goo gl" in webt.lower()
             #     print user
 
+            ########################################
+
             userW = ','.join(map(str, user))
             output.write(userW + "\n")
 
-            if user[11] == 1:
+            if user[12] == 1:
                 sketch_n += 1
                 #print reason,r
                 output2.write(userW + "\n")
@@ -346,7 +361,8 @@ def get_user(id):
         "Action",              \
         "Pays",                \
         "DuplicateDescription",\
-        "DuplicateWebsite"]
+        "DuplicateWebsite",    \
+        "website_aggregate"]
 
     user = [0] *  len(header)
 
@@ -364,6 +380,7 @@ def get_user(id):
     #Has URL
     if r["website"] != None:
         user[3] = 1
+
 
     #Has profane Language in Description and website title
     
@@ -398,9 +415,20 @@ def get_user(id):
         if desc_dict["u'"+r["website"]+"'"] > 1:
             user[9] = desc_dict["u'"+r["website"]+"'"];
 
+    #Is URL aggregate site
+    print r["website"]
+    if r["website"] != None:
+        aggregate_sites = ["goo.gl","bit.ly","ad.fly","tinyurl"]
+        for term in aggregate_sites:
+            if term in r["website"]:
+                user[10] = 1
+                print term
+
+
     return user
 
 #Neural Network
+
 (X_train,y_train,X_test,y_test) = getBatches(5000,5000,0)
 kamala = keras_nn(X_train,y_train,X_test,y_test,verbose=1)
 
@@ -410,7 +438,7 @@ x2 = numpy.asarray([get_user(4192879)])   #Not Spam (Konukoii)
 x3 = numpy.asarray([get_user(246928489)]) #Spam
 x4 = numpy.asarray([get_user(41922879)])  #Not Spam (Random Zombie User)
 x5 = numpy.asarray([get_user(4360546)])   #Not Spam (Kygo)
-kamala.train_on_batch(x5,numpy.asarray([0]))
+#kamala.train_on_batch(numpy.asarray(x5,x5),numpy.asarray(0,0))
 print kamala.predict_proba(x,verbose = 0)
 print kamala.predict_proba(x2,verbose = 0)
 print kamala.predict_proba(x3,verbose = 0)
