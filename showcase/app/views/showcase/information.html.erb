@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>User Details Template | PrepBootstrap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+
+<div class="container">
+
+  <div class="page-header">
+    <h1>Sound Cloud User Details</h1>
+  </div>
+
+  <!-- User Details - START -->
+  <div class="container">
+    <div class="row">
+      <div class="col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
+        <div class="well details">
+          <div class="col-sm-12">
+            <div class="col-xs-12 col-sm-8">
+              <h2 style="text-decoration:none;"><a href="<%=@user['permalink_url']%>"><%=@user["username"] %></a></h2>
+              <p><strong>Full name: </strong><%=@user['full_name']%> </p>
+              <p><strong>Type: </strong><%=@user['kind']%> </p>
+              <p><strong>Website: </strong><a href="<%=@user['website']%>"><%=@user['website_title']%></a></p>
+              <p><strong>Description: </strong><%=@user['description']%></p>
+              <p><strong>Country: </strong><p><<%=@user['country']%>/p>  </p>
+              <p><strong>City: </strong><%=@user['city']%> </p>
+              <p><strong>Track Count: </strong>Semantics </p>
+              <p><strong>Plan Type: </strong><%=@user['plan']%> </p>
+              <p><strong>Following: </strong><%=@user['followings_count']%></p>
+              <p><strong>Followers: </strong><%=@user['followers_count']%></p>
+              <p><strong>Reposts Count: </strong><%=@user['reposts_count']%></p>
+              <p><strong>Likes: </strong><%=@user['likes_count']%> ❤</p>
+              <p><strong>Public Favorites: </strong><%=@user['public_favorites_count']%></p>
+
+              <!--<p class="text-center skills"><strong>Skills</strong></p>-->
+              <!--<div class="skillLine"><div class="skill pull-left">HTML5</div><div class="rating" id="rate1"></div></div>-->
+              <!--<div class="skillLine"><div class="skill pull-left">C#</div><div class="rating" id="rate2"></div></div>-->
+              <!--<div class="skillLine"><div class="skill pull-left">jQuery</div><div class="rating" id="rate3"></div></div>-->
+              <!--<div class="skillLine"><div class="skill pull-left">SQL</div><div class="rating" id="rate4"></div></div>-->
+              <!--<div class="skillLine"><div class="skill pull-left">CSS</div><div class="rating" id="rate5"></div></div>-->
+            </div>
+            <div class="col-xs-12 col-sm-4 col-lg-1 text-center">
+              <figure>
+                <span class="avg"><img class="img-thumbnail" src="<%= @user['avatar_url'] %>" alt=""></span>
+                <span class="avg"><img class="img-thumbnail" src="<%= @selected_image %>" style="margin-top: 20px"alt=""></span>
+                <span style="font-size:47px; padding-top: 20px;">I'm <%= @confidence_rate %>% confident</span>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    body {
+      font-family: "Segoe UI", 'sans-serif';
+    }
+
+    .avg {
+      font-size:77px;
+      padding-top: 20px;
+      color:#5CB85C;
+    }
+
+    .details {
+      min-height: 355px;
+      display: inline-block;
+    }
+
+    .rating {
+      padding-left:40px;
+    }
+
+    .skillLine {
+      display:inline-block;
+      width:100%;
+      padding: 3px 4px;
+    }
+  </style>
+</div>
+
+</body>
+</html>
