@@ -38,6 +38,7 @@ def load_everything():
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
     loaded_model.load_weights("kamala.h5")
+    loaded_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     
 
     print "Loading Dictionaries..."
@@ -152,8 +153,23 @@ def classify_user(id):
     
     return proba
 
+#In case we wrongly labeled a user as spam/legit, you can send a fix and retrain network
+def fix_user(id,label):
+    if label != 0 and label != 1:
+        return -1
+    user = get_user(id)
+    kamala.train_on_batch(numpy.asarray([user]),numpy.asarray([label]))
+    print "Trained"
+    return 0
 
-
+#In case we want to save our modified Neural Network
+def save_kamala(kamala):
+    model_json = kamala.to_json()
+    with open("kamala_mod.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    kamala.save_weights("kamala_mod.h5")
+    print("Saved kamala to disk")
 
 #EXAMPLE USAGE
 if __name__ == "__main__":
@@ -161,6 +177,7 @@ if __name__ == "__main__":
     (kamala,desc_dict,web_dict,sketchy_terms) = load_everything()
 
     #Check Users
+    print "TESTS :-------------------------------"
     print "REAL:",100*classify_user(246928450),"%"  #Not Spam (Random Zombie User)
     print "REAL:",100*classify_user(4192879),"%"    #Not Spam (Konukoii)
     print "REAL:",100*classify_user(41922879),"%"   #Not Spam (Random Zombie User)
@@ -171,6 +188,6 @@ if __name__ == "__main__":
     print "SPAM:",100*classify_user(246928489),"%"  #Spam (Pr0n)
     print "SPAM:",100*classify_user(109687919),"%"  #Spam (Quiet)
 
-
-
+    #fix_user(246928450,1)
+    embed()
 
