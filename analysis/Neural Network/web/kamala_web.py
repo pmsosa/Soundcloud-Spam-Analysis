@@ -1,6 +1,6 @@
 ################
 ## WEB KAMALA ##
-##            ##
+##  /pmsosa   ##
 ################
 
 from IPython import embed
@@ -10,6 +10,7 @@ from collections import Counter
 import pickle
 import random
 import string
+from flask import *
 
 import numpy
 from keras.datasets import imdb
@@ -21,24 +22,26 @@ from keras.preprocessing import sequence
 from keras.models import model_from_json
 
 
-
+app = Flask(__name__)
 
 kamala        = 0 # Kamala is our NN
 desc_dict     = 0 # Duplicate Description Counter
 web_dict      = 0 # Duplicate Website Name Counter
 sketchy_terms = 0 # List of Sketchy Terms
-
+CLIENT_ID     = "fDoItMDbsbZz8dY16ZzARCZmzgHBPotA"
 
 #Load the NN and the Dictionaries
 def load_everything():
+    global kamala, desc_dict, web_dict, sketchy_terms
+
     print("Loading Kamala...")
     json_file = open('kamala.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
-    loaded_model = model_from_json(loaded_model_json)
+    kamala = model_from_json(loaded_model_json)
     # load weights into new model
-    loaded_model.load_weights("kamala.h5")
-    loaded_model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    kamala.load_weights("kamala.h5")
+    kamala.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     
 
     print "Loading Dictionaries..."
@@ -54,12 +57,14 @@ def load_everything():
     sketchy_terms = [ "goo.gl" , "laid tonight", "bit.ly", " bitly ", " adfly ", "adf.ly", " porn ", " boobs ", " pornstar ", " anal ", " tits ", " nipples ", " vagina ", " penis "," viagra "," cialsis "]
 
 
-    return (loaded_model,desc_dict,web_dict,sketchy_terms)
+    return (kamala,desc_dict,web_dict,sketchy_terms)
 
 #Query the User from Soundcloud and turn it into a Feature Vector to feed into the NN
 def get_user(id):
 
-    r = requests.get("http://api.soundcloud.com/users/"+str(id)+"?client_id=02gUJC0hH2ct1EGOcYXQIzRFU91c72Ea")
+    print "http://api.soundcloud.com/users/"+str(id)+"?client_id="+CLIENT_ID
+    r = requests.get("http://api.soundcloud.com/users/"+str(id)+"?client_id="+CLIENT_ID)
+
 
     if int(r.status_code) != 200:
         print r.status_code,"Error!"
@@ -145,13 +150,21 @@ def get_user(id):
 #Given a user id, get it from soundcloud, and feed it into the NN to classify.
 def classify_user(id):
     user = get_user(id)
-    #print user
+    print user
     if (user == -1):
         return -1;
 
     proba = kamala.predict_proba(numpy.asarray([user]),verbose=0)[0][0]
     
     return proba
+    
+#Wrapper for the above classify_user function
+@app.route('/classify/<id>', methods=['GET'])
+def web_classify_user(id):
+    proba = classify_user(id)
+    if (proba == -1): return "null"
+    else:
+        return str(proba)
 
 #In case we wrongly labeled a user as spam/legit, you can send a fix and retrain network
 def fix_user(id,label):
@@ -171,23 +184,36 @@ def save_kamala(kamala):
     kamala.save_weights("kamala_mod.h5")
     print("Saved kamala to disk")
 
+#Check if Server is Alive
+@app.route('/alive', methods=['GET'])
+def alive():
+    print "Here be dragons..."
+    return "Here be dragons..."
+
 #EXAMPLE USAGE
 if __name__ == "__main__":
+
+
     #Load Everything
-    (kamala,desc_dict,web_dict,sketchy_terms) = load_everything()
+    load_everything()
 
     #Check Users
-    print "TESTS :-------------------------------"
-    print "REAL:",100*classify_user(246928450),"%"  #Not Spam (Random Zombie User)
-    print "REAL:",100*classify_user(4192879),"%"    #Not Spam (Konukoii)
-    print "REAL:",100*classify_user(41922879),"%"   #Not Spam (Random Zombie User)
 
-    print "STAR:",100*classify_user(4360546),"%"    #Not Spam (Kygo)
-    print "STAR:",100*classify_user(30049192),"%"   #Not Spam (Matoma)
+    #print "TESTS :-------------------------------"
+    #print "REAL:",100*classify_user(246928450),"%"  #Not Spam (Random Zombie User)
+    #print "REAL:",100*classify_user(4192879),"%"    #Not Spam (Konukoii)
+    #print "REAL:",100*classify_user(41922879),"%"   #Not Spam (Random Zombie User)
 
-    print "SPAM:",100*classify_user(246928489),"%"  #Spam (Pr0n)
-    print "SPAM:",100*classify_user(109687919),"%"  #Spam (Quiet)
+    #print "STAR:",100*classify_user(4360546),"%"    #Not Spam (Kygo)
+    #print "STAR:",100*classify_user(30049192),"%"   #Not Spam (Matoma)
+
+    #print "SPAM:",100*classify_user(246928489),"%"  #Spam (Pr0n)
+    #print "SPAM:",100*classify_user(109687919),"%"  #Spam (Quiet)
 
     #fix_user(246928450,1)
-    embed()
 
+    app.debug = False   # Turn On to Debug
+    app.run(port=1992)  # host= '0.0.0.0' (if You want to open to the public)
+    #Eg. 'localhost:1992/classify/4360546'
+    
+    #embed()
